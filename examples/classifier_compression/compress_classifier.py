@@ -58,7 +58,7 @@ import distiller
 from distiller.models import create_model
 import distiller.apputils.image_classifier as classifier
 import distiller.apputils as apputils
-import parser
+import mod_parser
 import os
 import numpy as np
 from ptq_lapq import image_classifier_ptq_lapq
@@ -66,11 +66,12 @@ from ptq_lapq import image_classifier_ptq_lapq
 
 # Logger handle
 msglogger = logging.getLogger()
+#logdirectory = msglogger.log_filename
 
 
 def main():
     # Parse arguments
-    args = parser.add_cmdline_args(classifier.init_classifier_compression_arg_parser(True)).parse_args()
+    args = mod_parser.add_cmdline_args(classifier.init_classifier_compression_arg_parser(True)).parse_args()
     app = ClassifierCompressorSampleApp(args, script_dir=os.path.dirname(__file__))
     if app.handle_subapps():
         return
@@ -120,6 +121,7 @@ def handle_subapps(model, criterion, optimizer, compression_scheduler, pylogger,
                 args, scheduler=compression_scheduler)
         do_exit = True
     elif args.thinnify:
+        #! NEED TO CHECK PATH LOGIC FOR THINNIFY
         assert args.resumed_checkpoint_path is not None, \
             "You must use --resume-from to provide a checkpoint file to thinnify"
         distiller.contract_model(model, compression_scheduler.zeros_mask_dict, args.arch, args.dataset, optimizer=None)
