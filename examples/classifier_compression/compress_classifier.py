@@ -121,12 +121,16 @@ def handle_subapps(model, criterion, optimizer, compression_scheduler, pylogger,
                 args, scheduler=compression_scheduler)
         do_exit = True
     elif args.thinnify:
-        #! NEED TO CHECK PATH LOGIC FOR THINNIFY
+
         assert args.resumed_checkpoint_path is not None, \
             "You must use --resume-from to provide a checkpoint file to thinnify"
         distiller.contract_model(model, compression_scheduler.zeros_mask_dict, args.arch, args.dataset, optimizer=None)
+
+        # puts entire path in front of thinnify so path not found error is emmitted unless compress_classifier is run from the correct scope
+        fixed_resume_checkpoint_path = os.path.split(args.resumed_checkpoint_path)[-1]
+
         apputils.save_checkpoint(0, args.arch, model, optimizer=None, scheduler=compression_scheduler,
-                                 name="{}_thinned".format(args.resumed_checkpoint_path.replace(".pth.tar", "")),
+                                 name="{}_thinned".format(fixed_resume_checkpoint_path.replace(".pth.tar", "")),
                                  dir=msglogger.logdir)
         msglogger.info("Note: if your model collapsed to random inference, you may want to fine-tune")
         do_exit = True
